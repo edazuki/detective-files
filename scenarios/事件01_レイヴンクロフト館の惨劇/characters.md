@@ -2,6 +2,29 @@
 
 ---
 
+## エドワード・レイヴンクロフト卿（当主・故人）
+
+```yaml
+id: edward
+name: エドワード・レイヴンクロフト
+role: 当主（故人）
+age: 68
+status: deceased
+
+knowledge:
+  initial:
+    - "帳簿に不審な支出が続いていること（修繕費名目）"
+    - "グレイを30年間信頼してきたこと"
+    - "弁護士ホワイトに帳簿監査を依頼したこと（10月10日）"
+  acquired: []
+  concealed:
+    - "グレイへの疑念が深まっていたこと（日記には書いたが誰にも言っていない）"
+```
+
+**人物像**: 几帳面で誠実な人物。病から回復し、帳簿整理を始めた矢先に殺された。グレイへの疑念を抱き始めていたが、30年の信頼から確信には至っていなかった。会話は不可だが、日記・手紙・証言を通じて人物像が浮かび上がる。
+
+---
+
 ## ホームズ・グレイ（執事）
 
 ```yaml
@@ -9,6 +32,7 @@ id: gray
 name: ホームズ・グレイ
 role: 執事
 age: 60
+status: active
 affinity_initial: 35
 trust_initial: 25
 affinity_change:
@@ -85,6 +109,7 @@ id: elena
 name: エレナ・レイヴンクロフト
 role: 当主の娘
 age: 28
+status: active
 affinity_initial: 60
 trust_initial: 50
 affinity_change:
@@ -140,6 +165,7 @@ id: hunt
 name: ドクター・ハント
 role: 家庭医
 age: 50
+status: active
 affinity_initial: 55
 trust_initial: 60
 affinity_change:
@@ -192,6 +218,7 @@ id: may
 name: メイ・フィン
 role: 使用人
 age: 22
+status: active
 affinity_initial: 45
 trust_initial: 40
 affinity_change:

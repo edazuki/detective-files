@@ -90,6 +90,7 @@ id: [snake_case_id]
 name: [名前]
 role: [役割]
 age: [年齢]
+status: active            # active / deceased / deceased_when: [flag_name]
 affinity_initial: [0-100]
 trust_initial: [0-100]
 affinity_change:
