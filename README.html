@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>detective-files — ファイル型ミステリーRPG</title>
+  <style>
+    body { font-family: Georgia, 'Times New Roman', serif; max-width: 860px; margin: 0 auto; padding: 2rem; background: #f9f6f0; color: #1a1a1a; line-height: 1.8; }
+    h1 { font-size: 2rem; border-bottom: 2px solid #8b0000; padding-bottom: .5rem; color: #8b0000; }
+    h2 { font-size: 1.4rem; margin-top: 2.5rem; color: #333; border-left: 4px solid #8b0000; padding-left: .75rem; }
+    h3 { font-size: 1.1rem; color: #555; margin-top: 1.5rem; }
+    code { background: #ede8df; padding: .15em .4em; border-radius: 3px; font-family: 'Courier New', monospace; font-size: .9em; }
+    pre { background: #2b2b2b; color: #f0e6d3; padding: 1.2rem; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: .88em; line-height: 1.6; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    th { background: #8b0000; color: white; padding: .5rem .8rem; text-align: left; }
+    td { padding: .45rem .8rem; border-bottom: 1px solid #ddd; }
+    tr:nth-child(even) td { background: #f0ebe2; }
+    .badge { display: inline-block; background: #8b0000; color: white; font-size: .75rem; padding: .2em .6em; border-radius: 3px; margin-right: .3em; }
+    .note { background: #fff8e1; border-left: 4px solid #f0a500; padding: .8rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; }
+    .file-tree { background: #2b2b2b; color: #a8d8a8; padding: 1.2rem; border-radius: 6px; font-family: 'Courier New', monospace; font-size: .88em; line-height: 1.8; white-space: pre; }
+    a { color: #8b0000; }
+  </style>
+</head>
+<body>
+
+<h1>🔍 detective-files</h1>
+<p><strong>ファイルシステムとAIを組み合わせたソロ推理RPGシステム。</strong><br>
+証拠はOSのファイルとして手元に届き、あなたはそれを読み、AIの助手と話しながら事件を解く。</p>
+
+<h2>どんなゲームか</h2>
+<p>TRPGのソロプレイに近い形式です。実行可能なアプリはなく、<strong>GitHub CopilotなどのAIチャットをゲームマスター兼助手として使います。</strong></p>
+<ul>
+  <li>調査したい場所や人物を自然言語で伝えると、AIが状況を描写します</li>
+  <li>条件を満たすと証拠ファイルが <code>evidence/</code> フォルダに届きます（テキスト、HTML、画像など）</li>
+  <li>ファイルを自分で開いて読み、推理を組み立てます</li>
+  <li>「犯人・動機・方法」を宣言すると判定フェーズに入ります</li>
+  <li><strong>収集した証拠で論理的に成立すれば、想定解と違ってもクリアになります</strong></li>
+</ul>
+
+<h2>必要な環境</h2>
+<table>
+  <tr><th>ツール</th><th>用途</th><th>推奨</th></tr>
+  <tr><td>AIチャット</td><td>ゲームマスター兼助手</td><td>GitHub Copilot in VS Code（<code>.github/copilot-instructions.md</code> を自動読み込み）</td></tr>
+  <tr><td>テキストエディタ / ファイルビューア</td><td>証拠ファイルを開く</td><td>VS Code、メモ帳など何でも可</td></tr>
+  <tr><td>PowerShell</td><td>証拠コピーコマンドの実行</td><td>Windows 標準搭載</td></tr>
+</table>
+
+<div class="note">
+  <strong>GitHub Copilot 以外のAIを使う場合：</strong><br>
+  <code>.github/copilot-instructions.md</code> と <code>system/rules.md</code> の内容をAIのシステムプロンプトまたは最初のメッセージで読み込んでください。
+</div>
+
+<h2>セットアップ</h2>
+<pre>git clone https://github.com/edazuki/detective-files.git
+cd detective-files</pre>
+<p>以上です。追加のインストールは不要です。</p>
+
+<h2>遊び方</h2>
+
+<h3>1. AIチャットを開く</h3>
+<p>VS Code で GitHub Copilot Chat を開きます。<code>.github/copilot-instructions.md</code> が自動的に読み込まれます。</p>
+
+<h3>2. ゲーム開始を宣言する</h3>
+<pre>推理ゲームを始めたい</pre>
+<p>AIがシナリオ一覧を提示し、難易度を選ぶと捜査が始まります。</p>
+
+<h3>3. 捜査する</h3>
+<p>自然言語でアクションを指示します：</p>
+<pre>書斎を調べたい
+ドクター・ハントに毒物について聞く
+窓の外側をよく調べてみる</pre>
+
+<h3>4. 証拠ファイルを受け取る</h3>
+<p>条件を満たすとAIがコピーコマンドを実行し、<code>evidence/</code> にファイルが届きます。<strong>ファイルは自分で開いて読んでください。</strong></p>
+
+<h3>5. 解決宣言</h3>
+<pre>推理します</pre>
+<p>犯人・動機・方法を述べると、証拠に基づいて判定されます。</p>
+
+<h2>フォルダ構成</h2>
+<div class="file-tree">detective-files/
+├── .github/
+│   └── copilot-instructions.md   ← AI用指示書（自動読み込み）
+├── system/
+│   └── rules.md                  ← 詳細ゲームルール
+├── scenarios/
+│   └── 事件01_レイヴンクロフト館の惨劇/
+│       ├── scenario.md           ← 場所・フラグ定義
+│       ├── characters.md         ← NPC定義（好感度・知識）
+│       ├── clues.md              ← 証拠の取得条件
+│       ├── truth.md              ← 真相（AIのみ参照）
+│       └── source-evidence/      ← 証拠ファイル原本
+├── evidence/                     ← 捜査中に届く証拠（gitignore済み）
+├── session/                      ← セッション状態・ログ
+├── templates/
+│   └── scenario-template.md      ← シナリオ作成テンプレート
+└── README.html                   ← このファイル</div>
+
+<h2>シナリオを追加する</h2>
+<p><code>templates/scenario-template.md</code> に全ファイルのテンプレートが入っています。<br>
+<code>scenarios/事件XX_タイトル/</code> フォルダを作り、テンプレートに沿って4ファイルを用意すればシナリオが追加できます。</p>
+
+<h2>特殊コマンド</h2>
+<table>
+  <tr><th>コマンド</th><th>動作</th></tr>
+  <tr><td><code>状態確認して</code></td><td>現在のフラグ・好感度をサマリーで表示</td></tr>
+  <tr><td><code>証拠一覧</code></td><td>取得済み証拠の一覧を表示（未発見は表示されない）</td></tr>
+  <tr><td><code>ヒントをください</code></td><td>難易度に応じた小さなヒント</td></tr>
+  <tr><td><code>推理します</code></td><td>解決フェーズに移行</td></tr>
+</table>
+
+<h2>ライセンス</h2>
+<p>MIT License</p>
+
+</body>
+</html>
