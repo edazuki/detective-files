@@ -4,9 +4,10 @@ This repository contains a file-based mystery RPG system operated through AI cha
 
 ## For AI Assistants
 
-**Start here:** Read [`.github/copilot-instructions.md`](.github/copilot-instructions.md) — it contains all instructions for running the game.
+**Start here:** Read [`.github/copilot-instructions.md`](.github/copilot-instructions.md) — it contains all instructions for running the game.  
+Then read [`system/rules.md`](system/rules.md) for detailed game rules.
 
-In some environments (GitHub Copilot in VS Code, etc.) this file is loaded automatically. If not, ask the AI to read it explicitly before starting.
+In GitHub Copilot (VS Code), these files are loaded automatically. In other AI environments, the user will paste this file as your first context — follow the instructions above to proceed.
 
 ## Repository Structure
 
