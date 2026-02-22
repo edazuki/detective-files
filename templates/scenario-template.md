@@ -103,9 +103,9 @@ trust_change:
 knowledge:
   initial:
     - "[このキャラクターが最初から知っていること]"
-  acquired: []     # AIがプレイ中に追記（探偵から得た情報）
   concealed:
     - "[このキャラクターが意図的に隠していること]"
+# acquired_knowledge はプレイ中に state.yml で管理（characters.md には書かない）
 
 phases:
   - id: default
