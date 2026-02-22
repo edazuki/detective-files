@@ -148,6 +148,7 @@ clues:
     copy_source: scenarios/[フォルダ名]/source-evidence/[ファイル名]
     copy_dest: evidence/[ファイル名]
     # パスは / 区切りで統一。AIが実行時にOSに合わせてコマンドを組み立てる。
+    initial: false   # true にするとセッション開始時に条件なしで自動コピー（省略時 false）
     flavor_text: "[証拠発見時の演出テキスト]"
     # ⚠️ flavor_text はシナリオの時代設定・世界観と矛盾しないように書くこと。
     # 例：近代以前の設定で「ブラウザで開く」「スマホで確認」などの表現は使わない。

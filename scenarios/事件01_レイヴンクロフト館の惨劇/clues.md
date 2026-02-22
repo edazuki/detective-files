@@ -8,6 +8,17 @@ AIはこのファイルを参照して、条件が満たされたときにファ
 ```yaml
 clues:
 
+  - id: case_briefing
+    file: source-evidence/case_briefing.txt
+    display_name: 捜査ブリーフィング
+    description: 事件概要・発見状況・関係者一覧。セッション開始時に自動配布。
+    initial: true
+    copy_source: scenarios/事件01_レイヴンクロフト館の惨劇/source-evidence/case_briefing.txt
+    copy_dest: evidence/case_briefing.txt
+    flavor_text: "捜査を開始するにあたり、依頼人エレナから事件の概要と関係者情報が手渡されました。"
+    hint_level: low
+    supports: []
+
   - id: crime_scene_note
     file: source-evidence/crime_scene_note.txt
     display_name: 現場状況メモ

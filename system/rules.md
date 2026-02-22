@@ -121,6 +121,7 @@ scenarios/[シナリオ]/source-evidence/  ← 証拠の原本（取得条件を
 | `flavor_text` | ✅ | 証拠発見時にAIが読み上げる演出テキスト |
 | `description` | - | AIが画像等を読めない場合の代替説明文 |
 | `display_name` | - | プレイヤーへの表示名（日本語等、見せてよい名前）。省略時はidを使用 |
+| `initial` | - | `true` の場合、条件なしでセッション開始時に自動コピーされる。省略時は `false` |
 | `sets_flag` | - | 取得時に立てるフラグ名 |
 | `hint_level` | ✅ | 真相解明への影響度（high/medium/low） |
 | `supports` | - | この証拠が支持する主張のリスト（解決判定用） |

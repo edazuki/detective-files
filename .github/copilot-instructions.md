@@ -54,7 +54,8 @@ find evidence -maxdepth 1 ! -name "_archive" ! -path "evidence" -exec mv {} "evi
 
 ### ステップ 4: ゲーム開始
 
-選択難易度を記憶し、`scenario.md` の導入テキストをプレイヤーに提示してゲームを開始する。
+1. `clues.md` の `initial: true` のエントリを全て確認し、対応するファイルを `evidence/` にコピーする（条件判定不要）
+2. 選択難易度を記憶し、`scenario.md` の導入テキストをプレイヤーに提示してゲームを開始する
 
 ---
 
