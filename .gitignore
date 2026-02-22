@@ -1,0 +1,5 @@
+session/state.yml
+session/feedback_*.md
+evidence/*
+!evidence/README.md
+evidence/_archive/
