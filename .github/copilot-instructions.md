@@ -23,12 +23,20 @@
 
 ### ステップ 1: 前回データのリセット
 
+OSを検出し、適切なコマンドで以下を実行する：
+1. `evidence/_archive/[タイムスタンプ]/` ディレクトリを作成する
+2. `evidence/` 内の `_archive` 以外の全ファイル・フォルダをそこに移動する
+
 ```
-# 前回の証拠を退避してからクリア
+# Windows (PowerShell) の例:
 $ts = Get-Date -Format "yyyyMMdd_HHmmss"
-if (Test-Path "evidence" -PathType Container) {
-    Get-ChildItem evidence -Exclude "_archive" | Move-Item -Destination "evidence/_archive/$ts" -Force
-}
+New-Item -ItemType Directory -Force "evidence/_archive/$ts" | Out-Null
+Get-ChildItem evidence -Exclude "_archive" | Move-Item -Destination "evidence/_archive/$ts" -Force
+
+# macOS / Linux (bash) の例:
+ts=$(date +"%Y%m%d_%H%M%S")
+mkdir -p "evidence/_archive/$ts"
+find evidence -maxdepth 1 ! -name "_archive" ! -path "evidence" -exec mv {} "evidence/_archive/$ts/" \;
 ```
 
 ### ステップ 2: 状態ファイルの初期化

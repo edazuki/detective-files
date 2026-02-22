@@ -42,11 +42,15 @@
   <tr><th>ツール</th><th>用途</th><th>推奨</th></tr>
   <tr><td>AIチャット</td><td>ゲームマスター兼助手</td><td>GitHub Copilot in VS Code（<code>.github/copilot-instructions.md</code> を自動読み込み）</td></tr>
   <tr><td>テキストエディタ / ファイルビューア</td><td>証拠ファイルを開く</td><td>VS Code、メモ帳など何でも可</td></tr>
-  <tr><td>PowerShell</td><td>証拠コピーコマンドの実行</td><td>Windows 標準搭載</td></tr>
+  <tr><td>ターミナル / シェル</td><td>AIが証拠コピーコマンドを実行</td><td>Windows: PowerShell / macOS・Linux: bash（OS自動判定）</td></tr>
 </table>
 
 <div class="note">
-  <strong>GitHub Copilot 以外のAIを使う場合：</strong><br>
+  <strong>⚠️ AIツールの制約について</strong><br>
+  このゲームはAIが実際にシェルコマンドを実行してファイルをコピーする設計です。<br>
+  <strong>対応：</strong> GitHub Copilot CLI、VS Code Agent Mode など、シェル実行が可能な環境<br>
+  <strong>非対応：</strong> Web版 ChatGPT・Claude など、ファイルシステムにアクセスできない環境<br><br>
+  <strong>GitHub Copilot 以外のAIを使う場合：</strong>
   <code>.github/copilot-instructions.md</code> と <code>system/rules.md</code> の内容をAIのシステムプロンプトまたは最初のメッセージで読み込んでください。
 </div>
 
