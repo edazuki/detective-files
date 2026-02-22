@@ -16,7 +16,8 @@ clues:
       location: 書斎
       action: 遺体・現場の状況を確認する
     sets_flag: crime_scene_visited
-    copy_command: "Copy-Item 'scenarios\\事件01_レイヴンクロフト館の惨劇\\source-evidence\\crime_scene_note.txt' 'evidence\\crime_scene_note.txt'"
+    copy_source: scenarios/事件01_レイヴンクロフト館の惨劇/source-evidence/crime_scene_note.txt
+    copy_dest: evidence/crime_scene_note.txt
     flavor_text: "書斎の机の上に、ドクター・ハントが書き記した現場状況のメモが残されていました。"
     hint_level: medium
     supports:
@@ -30,7 +31,8 @@ clues:
       location: 書斎
       action: 遺書・便箋を確認する
     sets_flag: suicide_note_found
-    copy_command: "Copy-Item 'scenarios\\事件01_レイヴンクロフト館の惨劇\\source-evidence\\suicide_note.txt' 'evidence\\suicide_note.txt'"
+    copy_source: scenarios/事件01_レイヴンクロフト館の惨劇/source-evidence/suicide_note.txt
+    copy_dest: evidence/suicide_note.txt
     flavor_text: "机の上の便箋を手に取ります。走り書きで数行——あなたはエレナの違和感の意味を考えながら、それを evidence/ に収めました。"
     hint_level: low
     supports:
@@ -44,7 +46,8 @@ clues:
       flag_required: hunt_poison_theory
       action: ハント医師に検査結果を持ってきてもらう・検死レポートを受け取る
     sets_flag: medical_report_obtained
-    copy_command: "Copy-Item 'scenarios\\事件01_レイヴンクロフト館の惨劇\\source-evidence\\medical_report.html' 'evidence\\medical_report.html'"
+    copy_source: scenarios/事件01_レイヴンクロフト館の惨劇/source-evidence/medical_report.html
+    copy_dest: evidence/medical_report.html
     flavor_text: "ドクター・ハントが検査結果をまとめた書類を持ってきました。「こちらをご確認ください」と彼は静かに言い、書類を差し出します。"
     hint_level: high
     supports:
@@ -60,7 +63,8 @@ clues:
       flag_required_2: hunt_poison_theory
       action: ブランデーグラスを詳しく調べる・ハント医師に分析を依頼する
     sets_flag: brandy_evidence_found
-    copy_command: "Copy-Item 'scenarios\\事件01_レイヴンクロフト館の惨劇\\source-evidence\\brandy_analysis.txt' 'evidence\\brandy_analysis.txt'"
+    copy_source: scenarios/事件01_レイヴンクロフト館の惨劇/source-evidence/brandy_analysis.txt
+    copy_dest: evidence/brandy_analysis.txt
     flavor_text: "ドクター・ハントがグラスの残液を分析してくれました。「やはり……」と彼は静かに言いました。"
     hint_level: high
     supports:
@@ -75,7 +79,8 @@ clues:
       location: 図書室
       action: 帳簿棚を調べる・帳簿を確認する
     sets_flag: ledger_found
-    copy_command: "Copy-Item 'scenarios\\事件01_レイヴンクロフト館の惨劇\\source-evidence\\account_ledger.txt' 'evidence\\account_ledger.txt'"
+    copy_source: scenarios/事件01_レイヴンクロフト館の惨劇/source-evidence/account_ledger.txt
+    copy_dest: evidence/account_ledger.txt
     flavor_text: "図書室の棚の奥に、古い帳簿が並んでいます。ひとつを開くと——数字の羅列の中に、奇妙なパターンが見えてきます。"
     hint_level: high
     supports:
@@ -90,7 +95,8 @@ clues:
       flag_required_2: garden_visited
       action: 窓の外から窓枠・掛け金周りを丁寧に調べる
     sets_flag: window_trick_discovered
-    copy_command: "Copy-Item 'scenarios\\事件01_レイヴンクロフト館の惨劇\\source-evidence\\window_scratch.txt' 'evidence\\window_scratch.txt'"
+    copy_source: scenarios/事件01_レイヴンクロフト館の惨劇/source-evidence/window_scratch.txt
+    copy_dest: evidence/window_scratch.txt
     flavor_text: "窓の外側の枠をよく見ると——かすかな金属の引っかき傷。あなたは息をのみました。これは、外から掛け金を操作した痕跡ではないか？"
     hint_level: high
     supports:
@@ -104,7 +110,8 @@ clues:
       location: 当主の寝室
       action: 日記・手帳を探す
     sets_flag: victim_diary_found
-    copy_command: "Copy-Item 'scenarios\\事件01_レイヴンクロフト館の惨劇\\source-evidence\\victim_diary.txt' 'evidence\\victim_diary.txt'"
+    copy_source: scenarios/事件01_レイヴンクロフト館の惨劇/source-evidence/victim_diary.txt
+    copy_dest: evidence/victim_diary.txt
     flavor_text: "寝室のベッドサイドテーブルの引き出しに、革表紙の日記帳がありました。最後の数ページに、あなたは目を止めます。"
     hint_level: high
     supports:
@@ -120,7 +127,8 @@ clues:
       affinity_gray: 50
       action: 引き出し・書類を調べる
     sets_flag: solicitor_letter_found
-    copy_command: "Copy-Item 'scenarios\\事件01_レイヴンクロフト館の惨劇\\source-evidence\\solicitor_letter.txt' 'evidence\\solicitor_letter.txt'"
+    copy_source: scenarios/事件01_レイヴンクロフト館の惨劇/source-evidence/solicitor_letter.txt
+    copy_dest: evidence/solicitor_letter.txt
     flavor_text: "グレイの部屋の引き出しの奥——折り畳まれた封書。差出人は「ホワイト法律事務所」。開封すると、来週月曜に帳簿監査を行うという通知が……"
     hint_level: high
     supports:
@@ -136,7 +144,8 @@ clues:
       flag_required: hunt_poison_theory
       action: 薬棚・引き出しを細かく調べる
     sets_flag: ~
-    copy_command: "Copy-Item 'scenarios\\事件01_レイヴンクロフト館の惨劇\\source-evidence\\poison_bottle.txt' 'evidence\\poison_bottle.txt'"
+    copy_source: scenarios/事件01_レイヴンクロフト館の惨劇/source-evidence/poison_bottle.txt
+    copy_dest: evidence/poison_bottle.txt
     flavor_text: "薬棚の最奥、調味料の陰に小さな茶色の瓶。ラベルを読んで、あなたの手が止まりました。"
     hint_level: high
     supports:

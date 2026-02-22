@@ -63,7 +63,9 @@ if (Test-Path "evidence" -PathType Container) {
 
 `clues.md` の条件が満たされた場合、以下を行う：
 
-1. `clues.md` の `copy_command` に従いシェルコマンドを実行してファイルを `evidence/` にコピーする
+1. `clues.md` の `copy_source` と `copy_dest` を使い、OSに応じたコマンドでファイルを `evidence/` にコピーする
+   - Windows（PowerShell）: `Copy-Item 'copy_source' 'copy_dest'`（パス区切りは `\`）
+   - macOS / Linux（bash）: `cp 'copy_source' 'copy_dest'`（パス区切りは `/`）
 2. `clues.md` の `flavor_text` を読み上げて証拠発見を告知する
 3. `state.yml` の `flags` に `sets_flag` で定義されたフラグを追加する
 4. `state.yml` を上書き保存する
@@ -127,5 +129,5 @@ NPCへの尋問・会話が一区切りついたら：
 - `truth.md` の内容はゲーム終了まで**絶対に漏らさない**（中間思考にも出さない）
 - `session/state.yml` はプレイヤーには見せない（内部状態として扱う）
 - `scenarios/[シナリオ名]/source-evidence/` 内のファイルは、`clues.md` の条件を満たすまでプレイヤーに案内しない
-- シェルコマンドはWindowsパス（バックスラッシュ）を使用すること
+- シェルコマンドはOS環境に合わせて実行すること（Windows: PowerShell / macOS・Linux: bash）
 - 日本語で対応する

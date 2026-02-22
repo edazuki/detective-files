@@ -40,7 +40,7 @@
 ### 証拠の入手
 
 - 場所・人物との会話などのアクションで `clues.md` の取得条件を満たすと証拠ファイルが `evidence/` にコピーされる
-- AIは `clues.md` の `copy_command` を実行し、`flavor_text` を読み上げる
+- AIは `clues.md` の `copy_source` / `copy_dest` を参照し、OSに応じたコマンドでコピーを実行する。その後 `flavor_text` を読み上げる
 
 ### 推理・考察
 
@@ -114,9 +114,10 @@ scenarios/[シナリオ]/source-evidence/  ← 証拠の原本（取得条件を
 | フィールド | 必須 | 内容 |
 |---|---|---|
 | `id` | ✅ | 証拠の一意なID（snake_case） |
-| `file` | ✅ | `source-evidence/` 内のファイルパス |
+| `file` | ✅ | `source-evidence/` 内のファイルパス（参照用） |
+| `copy_source` | ✅ | コピー元パス（`/` 区切り、リポジトリルートからの相対パス） |
+| `copy_dest` | ✅ | コピー先パス（`/` 区切り、例: `evidence/xxx.txt`） |
 | `condition` | ✅ | 取得可能になる条件（フラグ・場所・アクション・好感度） |
-| `copy_command` | ✅ | AIが実行するコピーコマンド（Windowsパス形式） |
 | `flavor_text` | ✅ | 証拠発見時にAIが読み上げる演出テキスト |
 | `description` | - | AIが画像等を読めない場合の代替説明文 |
 | `display_name` | - | プレイヤーへの表示名（日本語等、見せてよい名前）。省略時はidを使用 |

@@ -145,7 +145,9 @@ clues:
       flag_required: [flag_name]          # 事前に必要なフラグ（省略可）
       affinity_[character_id]: [数値]     # 好感度条件（省略可）
     sets_flag: [flag_name]               # 取得時に立てるフラグ（省略可）
-    copy_command: "Copy-Item 'scenarios\\[フォルダ名]\\source-evidence\\[ファイル名]' 'evidence\\[ファイル名]'"
+    copy_source: scenarios/[フォルダ名]/source-evidence/[ファイル名]
+    copy_dest: evidence/[ファイル名]
+    # パスは / 区切りで統一。AIが実行時にOSに合わせてコマンドを組み立てる。
     flavor_text: "[証拠発見時の演出テキスト]"
     # ⚠️ flavor_text はシナリオの時代設定・世界観と矛盾しないように書くこと。
     # 例：近代以前の設定で「ブラウザで開く」「スマホで確認」などの表現は使わない。
