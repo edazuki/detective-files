@@ -16,7 +16,8 @@
 session/state.yml
 session/feedback_*.md
 
-# evidence/ は README 以外除外
+# evidence/ は README と viewer.html 以外除外
 evidence/*
 !evidence/README.md
+!evidence/viewer.html
 evidence/_archive/
