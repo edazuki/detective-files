@@ -21,27 +21,24 @@
    - `clues.md` — 証拠ファイル一覧・取得条件
    - `truth.md` — **真相（絶対にプレイヤーに漏らさない）**
 
-### ステップ 1: 前回データのリセット
+### ステップ 1: セーブフォルダの作成
 
-OSを検出し、適切なコマンドで以下を実行する：
-1. `evidence/_archive/[タイムスタンプ]/` ディレクトリを作成する
-2. `evidence/` 内の `_archive` 以外の全ファイル・フォルダをそこに移動する
+1. セーブ名を決める（例: 事件01_初回）
+2. `saves/<セーブ名>/` と `saves/<セーブ名>/evidence/` を作成する
+3. `scenarios/<シナリオ名>/viewer.html` → `saves/<セーブ名>/viewer.html` にコピーする
+4. `templates/evidence-data.js` → `saves/<セーブ名>/evidence-data.js` にコピーし、
+   `evidence-data.js` の theme を `scenario.md` の `theme:` ブロックに合わせて更新する
 
 ```
-# Windows (PowerShell) の例:
-$ts = Get-Date -Format "yyyyMMdd_HHmmss"
-New-Item -ItemType Directory -Force "evidence/_archive/$ts" | Out-Null
-Get-ChildItem evidence -Exclude "_archive" | Move-Item -Destination "evidence/_archive/$ts" -Force
-
-# macOS / Linux (bash) の例:
-ts=$(date +"%Y%m%d_%H%M%S")
-mkdir -p "evidence/_archive/$ts"
-find evidence -maxdepth 1 ! -name "_archive" ! -path "evidence" -exec mv {} "evidence/_archive/$ts/" \;
+# bash の例:
+mkdir -p "saves/<セーブ名>/evidence"
+cp "scenarios/<シナリオ名>/viewer.html" "saves/<セーブ名>/viewer.html"
+cp templates/evidence-data.js "saves/<セーブ名>/evidence-data.js"
 ```
 
 ### ステップ 2: 状態ファイルの初期化
 
-`session/state.yml` を `characters.md` の初期値に基づいて生成する。
+`saves/<セーブ名>/state.yml` を `characters.md` の初期値に基づいて生成する。
 フォーマットは `system/rules.md` の「状態ファイル仕様」を参照。
 
 ### ステップ 3: 難易度選択
@@ -54,8 +51,9 @@ find evidence -maxdepth 1 ! -name "_archive" ! -path "evidence" -exec mv {} "evi
 
 ### ステップ 4: ゲーム開始
 
-1. `clues.md` の `initial: true` のエントリを全て確認し、対応するファイルを `evidence/` にコピーする（条件判定不要）
-2. 選択難易度を記憶し、`scenario.md` の導入テキストをプレイヤーに提示してゲームを開始する
+1. `clues.md` の `initial: true` のエントリを全て確認し、対応するファイルを `saves/<セーブ名>/evidence/` にコピーする（条件判定不要）
+2. コピー後、`evidence-data.js` を再生成する（下記「evidence-data.js の再生成手順」参照）
+3. 選択難易度を記憶し、`scenario.md` の導入テキストをプレイヤーに提示してゲームを開始する
 
 ---
 
@@ -72,25 +70,38 @@ find evidence -maxdepth 1 ! -name "_archive" ! -path "evidence" -exec mv {} "evi
 
 `clues.md` の条件が満たされた場合、以下を行う：
 
-1. `clues.md` の `copy_source` と `copy_dest` を使い、OSに応じたコマンドでファイルを `evidence/` にコピーする
-   - Windows（PowerShell）: `Copy-Item 'copy_source' 'copy_dest'`（パス区切りは `\`）
-   - macOS / Linux（bash）: `cp 'copy_source' 'copy_dest'`（パス区切りは `/`）
+1. `clues.md` の `copy_source` と `copy_dest` を参照してファイルをコピーする。
+   ただし `copy_dest` の `evidence/` を `saves/<セーブ名>/evidence/` に読み替える
+   - bash: `cp 'copy_source' 'saves/<セーブ名>/evidence/<ファイル名>'`
 2. `clues.md` の `flavor_text` を読み上げて証拠発見を告知する
-3. `state.yml` の `flags` に `sets_flag` で定義されたフラグを追加する
-4. `state.yml` を上書き保存する
+3. `saves/<セーブ名>/state.yml` の `flags` に `sets_flag` で定義されたフラグを追加する
+4. `saves/<セーブ名>/state.yml` を上書き保存する
+5. `evidence-data.js` を再生成する（下記「evidence-data.js の再生成手順」参照）
+
+### evidence-data.js の再生成手順
+
+証拠ファイルが追加・更新されたら必ず実行する：
+
+1. `saves/<セーブ名>/evidence/` 内の全ファイルを読む（`viewer.html` は除く）
+2. `clues.md` の `display_name` を参照して `displayName` を決定する
+   - clue の `id` がファイル名 stem（拡張子なし）と一致するものを使用
+   - 一致するものがなければファイル名 stem をそのまま使用
+3. `interview_` で始まるファイルは `category: "interview"` / `character: <id の interview_ の次のパート>` とする
+4. `window.EVIDENCE_DATA.files` を全件上書きして `saves/<セーブ名>/evidence-data.js` を保存する
 
 ### 会話（聴取）
 
 NPCへの尋問・会話が一区切りついたら：
 
 1. 「今の会話まとめときました！」と告知する
-2. `evidence/interview_[キャラクターID]_t[ターン番号].md` として聴取メモを生成・保存する
-3. 会話内容に応じて `state.yml` の好感度（affinity）・信頼度（trust）を更新する
-4. 会話トピックのフラグ（`sets_flag`）が立つ場合は `state.yml` に記録する
+2. `saves/<セーブ名>/evidence/interview_[キャラクターID]_t[ターン番号].md` として聴取メモを生成・保存する
+3. 会話内容に応じて `saves/<セーブ名>/state.yml` の好感度（affinity）・信頼度（trust）を更新する
+4. 会話トピックのフラグ（`sets_flag`）が立つ場合は `saves/<セーブ名>/state.yml` に記録する
+5. `evidence-data.js` を再生成する
 
 ### 状態ファイルの更新タイミング
 
-以下のイベントごとに `session/state.yml` を読み込み・更新・上書きする：
+以下のイベントごとに `saves/<セーブ名>/state.yml` を読み込み・更新・上書きする：
 - 証拠ファイルを取得したとき
 - 会話が終了したとき
 - プレイヤーが場所を移動・調査したとき
@@ -99,8 +110,8 @@ NPCへの尋問・会話が一区切りついたら：
 
 | コマンド | 動作 |
 |---|---|
-| 「状態確認して」 | `state.yml` を再読み込みし、現在のフラグと好感度をサマリーで表示 |
-| 「証拠一覧」 | `evidence/` の**取得済みファイルのみ**を表示する。未発見の証拠はファイル名も含め一切表示しない（ネタバレ防止） |
+| 「状態確認して」 | `saves/<セーブ名>/state.yml` を再読み込みし、現在のフラグと好感度をサマリーで表示 |
+| 「証拠一覧」 | `saves/<セーブ名>/evidence/` の**取得済みファイルのみ**を表示する。未発見の証拠はファイル名も含め一切表示しない（ネタバレ防止） |
 | 「ヒントをください」 | 難易度に応じた小さなヒントを出す（答えに直結する情報は出さない） |
 | 「推理します」 | 解決フェーズに移行する（`system/rules.md` の解決判定手順に従う） |
 
@@ -111,7 +122,7 @@ NPCへの尋問・会話が一区切りついたら：
 プレイヤーが「推理します」または「解決宣言」をした場合：
 
 1. プレイヤーに「犯人・動機・方法」の3点を宣言させる
-2. `evidence/` 内の全ファイルと `state.yml` を参照して `system/rules.md` の判定基準で評価する
+2. `saves/<セーブ名>/evidence/` 内の全ファイルと `saves/<セーブ名>/state.yml` を参照して `system/rules.md` の判定基準で評価する
 3. 結果を告知する
 
 詳細な判定手順は `system/rules.md` の「解決フェーズ」セクションを参照。
@@ -128,15 +139,24 @@ NPCへの尋問・会話が一区切りついたら：
    - 助手として驚いた場面・判断が難しかった場面
    - プレイヤーの予想外の行動（例：「先に人を動かしてから解決宣言する選択は予想外でした」）
    - 別解が成立した場合、その論理への感想
-   
+
    これにより「同じ事件を別の角度で体験した者同士」という共犯感を生む。
+
+---
+
+## パス早見表
+
+| 旧パス | 新パス |
+|---|---|
+| `session/state.yml` | `saves/<セーブ名>/state.yml` |
+| `evidence/` | `saves/<セーブ名>/evidence/` |
+| `evidence/interview_*.md` | `saves/<セーブ名>/evidence/interview_*.md` |
 
 ---
 
 ## 注意事項
 
 - `truth.md` の内容はゲーム終了まで**絶対に漏らさない**（中間思考にも出さない）
-- `session/state.yml` はプレイヤーには見せない（内部状態として扱う）
+- `saves/<セーブ名>/state.yml` はプレイヤーには見せない（内部状態として扱う）
 - `scenarios/[シナリオ名]/source-evidence/` 内のファイルは、`clues.md` の条件を満たすまでプレイヤーに案内しない
-- シェルコマンドはOS環境に合わせて実行すること（Windows: PowerShell / macOS・Linux: bash）
 - 日本語で対応する

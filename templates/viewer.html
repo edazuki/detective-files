@@ -51,32 +51,12 @@
       border-bottom: 2px solid var(--border-accent);
     }
 
-    #open-btn {
-      background: var(--accent);
-      color: #f0e8d8;
-      border: none;
-      padding: 7px 18px;
-      font-family: var(--font);
-      font-size: 13px;
-      cursor: pointer;
-      letter-spacing: 0.05em;
-      transition: background 0.15s;
-      white-space: nowrap;
-    }
-    #open-btn:hover { background: var(--accent-light); }
-
     #header-title {
       font-size: 17px;
       letter-spacing: 0.12em;
       color: var(--text-primary);
       flex: 1;
       text-align: center;
-    }
-
-    #header-hint {
-      font-size: 11px;
-      color: var(--text-muted);
-      white-space: nowrap;
     }
 
     #header-count {
@@ -128,17 +108,6 @@
       overflow-y: auto;
       padding: 6px 0;
     }
-
-    .group-header {
-      padding: 10px 16px 4px;
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      border-top: 1px solid var(--border);
-      margin-top: 4px;
-    }
-    .group-header:first-child { border-top: none; margin-top: 0; }
 
     .file-item {
       display: flex;
@@ -201,13 +170,6 @@
       font-size: 36px;
       opacity: 0.25;
       line-height: 1;
-    }
-
-    #content-placeholder .hint {
-      font-size: 11px;
-      color: var(--text-muted);
-      opacity: 0.6;
-      margin-top: 4px;
     }
 
     #content-text {
@@ -305,34 +267,18 @@
       opacity: 0.6;
     }
 
-    /* ── No-API Warning ── */
-    #no-api-warning {
-      display: none;
-      background: #3a0000;
-      color: #f0c0c0;
-      padding: 8px 20px;
-      font-size: 12px;
-      text-align: center;
-      border-bottom: 1px solid #6a2020;
-    }
-
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-deep); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--border-accent); }
   </style>
+  <script src="evidence-data.js"></script>
 </head>
 <body>
 
-<div id="no-api-warning">
-  このビューアは File System Access API が必要です。Chrome または Edge でご使用ください。
-</div>
-
 <div id="header">
-  <button id="open-btn">フォルダを開く</button>
   <div id="header-title">Evidence Viewer</div>
-  <div id="header-hint">「推理ゲーム」ルートフォルダを選択</div>
   <div id="header-count"></div>
 </div>
 
@@ -346,21 +292,11 @@
 </div>
 
 <div id="main">
-  <div id="file-list-panel">
-    <div id="empty-state" style="
-      display:flex; align-items:center; justify-content:center;
-      height:100%; color:var(--text-muted); font-size:13px;
-      padding:20px; text-align:center; flex-direction:column; gap:8px;
-    ">
-      <div>「フォルダを開く」から</div>
-      <div style="font-size:11px; opacity:0.6;">「推理ゲーム」ルートフォルダを選択</div>
-    </div>
-  </div>
+  <div id="file-list-panel"></div>
   <div id="content-viewer">
     <div id="content-placeholder">
       <div class="ornament">⚜</div>
       <div>証拠ファイルを選択してください</div>
-      <div class="hint">Chrome / Edge 専用（File System Access API）</div>
     </div>
   </div>
 </div>
@@ -376,110 +312,38 @@
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let currentTab = 'evidence';
-let evidenceFiles  = [];  // { name, displayName, handle, ext }
-let interviewFiles = [];  // { name, displayName, handle, ext, character }
+let evidenceFiles  = [];  // { name, displayName, ext, content, character? }
+let interviewFiles = [];  // { name, displayName, ext, content, character }
 let currentBlobUrl = null;
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
-(function init() {
-  if (!window.showDirectoryPicker) {
-    document.getElementById('no-api-warning').style.display = 'block';
-    document.getElementById('open-btn').disabled = true;
-    return;
-  }
-  document.getElementById('open-btn').addEventListener('click', openFolder);
+document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('tab-evidence').addEventListener('click', () => switchTab('evidence'));
   document.getElementById('tab-interview').addEventListener('click', () => switchTab('interview'));
-})();
 
-// ─── Open Folder ──────────────────────────────────────────────────────────────
-async function openFolder() {
-  let rootHandle;
-  try {
-    rootHandle = await showDirectoryPicker({
-      mode: 'read',
-      id: 'mystery-game-root',
-    });
-  } catch (e) {
-    if (e.name !== 'AbortError') console.error('showDirectoryPicker:', e);
-    return;
+  const data = window.EVIDENCE_DATA;
+  applyTheme(data.theme);
+
+  evidenceFiles  = [];
+  interviewFiles = [];
+  for (const f of data.files) {
+    if (f.category === 'interview') interviewFiles.push(f);
+    else                            evidenceFiles.push(f);
   }
 
-  const clueMap = await loadClues(rootHandle);
-  await loadTheme(rootHandle);
-  await loadEvidenceFiles(rootHandle, clueMap);
-}
+  // Sort
+  evidenceFiles.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+  interviewFiles.sort((a, b) => {
+    const ta = getTurnNumber(a.name), tb = getTurnNumber(b.name);
+    if (ta !== tb) return ta - tb;
+    return a.character.localeCompare(b.character, 'ja');
+  });
 
-// ─── Load clues.md ────────────────────────────────────────────────────────────
-async function loadClues(rootHandle) {
-  try {
-    const scenarioDir = await findScenarioDir(rootHandle);
-    if (!scenarioDir) return {};
-    const handle = await scenarioDir.getFileHandle('clues.md');
-    const text = await readFileHandle(handle);
-    return parseClueMap(text);
-  } catch (e) {
-    console.warn('clues.md 読み込み失敗:', e);
-    return {};
-  }
-}
+  updateCounts();
+  renderFileList();
+});
 
-function parseClueMap(text) {
-  const map = {};
-  const yamlMatch = text.match(/```yaml\n([\s\S]+?)\n```/);
-  if (!yamlMatch) return map;
-
-  const lines = yamlMatch[1].split('\n');
-  let currentId = null;
-
-  for (const line of lines) {
-    const idMatch = line.match(/^\s+- id:\s+(\S+)/);
-    if (idMatch) {
-      currentId = idMatch[1];
-      continue;
-    }
-    if (currentId) {
-      const dnMatch = line.match(/^\s+display_name:\s+"?([^"\n]+?)"?\s*$/);
-      if (dnMatch) {
-        map[currentId] = dnMatch[1].trim();
-      }
-    }
-  }
-  return map;
-}
-
-// ─── Load theme from scenario.md ─────────────────────────────────────────────
-async function loadTheme(rootHandle) {
-  try {
-    const scenarioDir = await findScenarioDir(rootHandle);
-    if (!scenarioDir) return;
-    const handle = await scenarioDir.getFileHandle('scenario.md');
-    const text = await readFileHandle(handle);
-    const match = text.match(/```yaml\n([\s\S]+?)\n```/);
-    if (!match) return;
-    const theme = parseThemeYaml(match[1]);
-    applyTheme(theme);
-  } catch (e) {
-    console.warn('theme 読み込み失敗:', e);
-  }
-}
-
-function parseThemeYaml(yaml) {
-  const theme = {};
-  const lines = yaml.split('\n');
-  let inTheme = false;
-  for (const line of lines) {
-    if (/^theme:/.test(line)) { inTheme = true; continue; }
-    if (inTheme) {
-      if (line.length > 0 && !/^\s/.test(line)) break;
-      // Match: key: "value" or key: value  (strip inline comments)
-      const m = line.match(/^\s+(\w+):\s+"?([^"#\n]+?)"?\s*(?:#.*)?$/);
-      if (m) theme[m[1]] = m[2].trim();
-    }
-  }
-  return theme;
-}
-
+// ─── Apply theme ──────────────────────────────────────────────────────────────
 function applyTheme(theme) {
   const root = document.documentElement;
   if (theme.accent)       root.style.setProperty('--accent',        theme.accent);
@@ -489,75 +353,14 @@ function applyTheme(theme) {
   if (theme.label)        document.getElementById('sb-theme').textContent = theme.label;
 }
 
-// ─── Load evidence/ files ─────────────────────────────────────────────────────
-async function loadEvidenceFiles(rootHandle, clueMap) {
-  let evidenceDir;
-  try {
-    evidenceDir = await rootHandle.getDirectoryHandle('evidence');
-  } catch (e) {
-    alert('evidence/ フォルダが見つかりません。\n「推理ゲーム」ルートフォルダを選択してください。');
-    return;
-  }
-
-  evidenceFiles  = [];
-  interviewFiles = [];
-
-  for await (const [name, handle] of evidenceDir.entries()) {
-    if (handle.kind === 'directory') continue;  // skip _archive/
-    if (name === 'viewer.html') continue;
-    if (name.startsWith('.')) continue;
-
-    const ext  = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
-    const stem = name.replace(/\.[^.]+$/, '');
-
-    if (name.startsWith('interview_')) {
-      const parts     = stem.split('_');       // ['interview', 'gray', 't3']
-      const character = parts[1] || '';
-      const turn      = parts.slice(2).join('_');
-      const displayName = clueMap[stem] || formatInterviewName(character, turn);
-      interviewFiles.push({ name, displayName, handle, ext, character });
-    } else {
-      const displayName = clueMap[stem] || stem;
-      evidenceFiles.push({ name, displayName, handle, ext });
-    }
-  }
-
-  // Sort
-  evidenceFiles.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
-  interviewFiles.sort((a, b) => {
-    if (a.character !== b.character) return a.character.localeCompare(b.character, 'ja');
-    return a.name.localeCompare(b.name, 'ja');
-  });
-
-  // Update counts
+// ─── Update counts ────────────────────────────────────────────────────────────
+function updateCounts() {
   const total = evidenceFiles.length + interviewFiles.length;
   document.getElementById('evidence-count').textContent = evidenceFiles.length;
   document.getElementById('interview-count').textContent = interviewFiles.length;
   document.getElementById('header-count').textContent = `証拠 ${total} 件`;
   document.getElementById('sb-evidence').textContent = evidenceFiles.length;
   document.getElementById('sb-interview').textContent = interviewFiles.length;
-
-  renderFileList();
-}
-
-function formatInterviewName(character, turn) {
-  // 'gray', 't3' → 'Gray（T3）'
-  const charPart = character.charAt(0).toUpperCase() + character.slice(1);
-  const turnPart = turn.toUpperCase().replace(/_/g, ' ');
-  return `${charPart}（${turnPart}）`;
-}
-
-// ─── Find scenario dir ────────────────────────────────────────────────────────
-async function findScenarioDir(rootHandle) {
-  try {
-    const scenariosDir = await rootHandle.getDirectoryHandle('scenarios');
-    for await (const [, handle] of scenariosDir.entries()) {
-      if (handle.kind === 'directory') return handle;
-    }
-  } catch (e) {
-    console.warn('scenarios/ が見つかりません:', e);
-  }
-  return null;
 }
 
 // ─── Tab switching ─────────────────────────────────────────────────────────────
@@ -576,18 +379,6 @@ function renderFileList() {
 
   const files = currentTab === 'evidence' ? evidenceFiles : interviewFiles;
 
-  if (evidenceFiles.length + interviewFiles.length === 0) {
-    panel.innerHTML = `<div style="
-      display:flex; align-items:center; justify-content:center;
-      height:100%; color:var(--text-muted); font-size:13px;
-      padding:20px; text-align:center; flex-direction:column; gap:8px;
-    ">
-      <div>「フォルダを開く」から</div>
-      <div style="font-size:11px; opacity:0.6;">「推理ゲーム」ルートフォルダを選択</div>
-    </div>`;
-    return;
-  }
-
   if (files.length === 0) {
     panel.innerHTML = `<div style="
       padding:20px; color:var(--text-muted); font-size:13px; text-align:center;
@@ -595,26 +386,8 @@ function renderFileList() {
     return;
   }
 
-  if (currentTab === 'evidence') {
-    for (const file of files) {
-      panel.appendChild(createFileItem(file));
-    }
-  } else {
-    // Group by character
-    const groups = new Map();
-    for (const file of interviewFiles) {
-      if (!groups.has(file.character)) groups.set(file.character, []);
-      groups.get(file.character).push(file);
-    }
-    for (const [char, charFiles] of groups) {
-      const header = document.createElement('div');
-      header.className = 'group-header';
-      header.textContent = char.charAt(0).toUpperCase() + char.slice(1);
-      panel.appendChild(header);
-      for (const file of charFiles) {
-        panel.appendChild(createFileItem(file));
-      }
-    }
+  for (const file of files) {
+    panel.appendChild(createFileItem(file));
   }
 }
 
@@ -639,18 +412,10 @@ function createFileItem(file) {
 }
 
 // ─── Select & display file ────────────────────────────────────────────────────
-async function selectFile(file, itemEl) {
+function selectFile(file, itemEl) {
   document.querySelectorAll('.file-item.selected').forEach(el => el.classList.remove('selected'));
   itemEl.classList.add('selected');
-
-  let text;
-  try {
-    text = await readFileHandle(file.handle);
-  } catch (e) {
-    showError(`ファイルの読み込みに失敗しました: ${file.name}`);
-    return;
-  }
-  displayContent(file, text);
+  displayContent(file, file.content);
 }
 
 function clearContent() {
@@ -660,14 +425,6 @@ function clearContent() {
       <div class="ornament">⚜</div>
       <div>証拠ファイルを選択してください</div>
     </div>`;
-}
-
-function showError(msg) {
-  revokeBlobUrl();
-  const viewer = document.getElementById('content-viewer');
-  viewer.innerHTML = `<div style="
-    padding:32px; color:#c45c5c; font-size:13px;
-  ">${escapeHtml(msg)}</div>`;
 }
 
 function displayContent(file, text) {
@@ -791,18 +548,17 @@ function inlineMd(text) {
   return text;
 }
 
+function getTurnNumber(name) {
+  const m = name.match(/_t(\d+)/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
 function escapeHtml(str) {
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
-}
-
-// ─── Utility ──────────────────────────────────────────────────────────────────
-async function readFileHandle(handle) {
-  const file = await handle.getFile();
-  return file.text();
 }
 </script>
 </body>

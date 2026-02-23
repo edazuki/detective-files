@@ -9,15 +9,5 @@
 !system/
 !scenarios/
 !templates/
-!session/
-!evidence/
-
-# session/ の除外
-session/state.yml
-session/feedback_*.md
-
-# evidence/ は README と viewer.html 以外除外
-evidence/*
-!evidence/README.md
-!evidence/viewer.html
-evidence/_archive/
+# saves/ は意図的に除外（ランタイムデータ）
+# session/ と evidence/ は廃止済み
