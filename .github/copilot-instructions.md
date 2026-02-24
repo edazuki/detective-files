@@ -105,7 +105,7 @@ viewer.html              ← templates/viewer.html をコピー
 
 ### フェーズ 3: チェックリスト検証（サイレント実行）
 
-`dev/scenario_flaw_checklist.md` の全項目を照合する。
+`templates/scenario_flaw_checklist.md` の全項目を照合する。
 
 - **問題なし** → フェーズ 4 へ
 - **問題あり** → 該当箇所を修正し、同チェックリストで再検証する
