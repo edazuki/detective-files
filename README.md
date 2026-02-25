@@ -10,6 +10,8 @@ This "AI-agnostic" design is one expression of a broader principle: **minimize d
 
 As a consequence, the system intentionally accepts some constraints (e.g., relying on the AI's ability to manage files and state) in exchange for this portability.
 
+One concrete example: `evidence-data.js` embeds file contents as strings so the evidence viewer works by simply opening an HTML file, with no local server or browser-specific API required. The plain-text source files remain the source of truth; the JS is a delivery layer for the browser, not a replacement for the originals.
+
 ---
 
 ## For AI Assistants

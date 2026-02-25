@@ -148,7 +148,17 @@ viewer.html              ← templates/viewer.html をコピー
    - clue の `id` がファイル名 stem（拡張子なし）と一致するものを使用
    - 一致するものがなければファイル名 stem をそのまま使用
 3. `interview_` で始まるファイルは `category: "interview"` / `character: <id の interview_ の次のパート>` とする
-4. `window.EVIDENCE_DATA.files` を全件上書きして `saves/<セーブ名>/evidence-data.js` を保存する
+4. 各ファイルの **内容を実際に読み込み**、`content` フィールドに文字列として埋め込む
+   - ビューアーはファイルシステムを直接読まず、`evidence-data.js` 内の `content` を使う
+   - **`content` が欠けていると、リスト表示はされるがクリックしても何も表示されない**
+5. 各エントリに必須フィールドをすべて含める：
+   - `name`: ファイル名（例: `"autopsy_report.txt"`）
+   - `displayName`: 表示名（日本語）
+   - `ext`: 拡張子（例: `"txt"`, `"md"`, `"html"`）
+   - `content`: ファイルの全文字列（テンプレートリテラルで埋め込む）
+   - `category`: 省略時は通常証拠。`"interview"` で聴取メモ扱い
+   - `character`: `category: "interview"` の場合のみ必要
+6. `window.EVIDENCE_DATA.files` を全件上書きして `saves/<セーブ名>/evidence-data.js` を保存する
 
 ### 会話（聴取）
 

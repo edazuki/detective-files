@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evidence Viewer</title>
+  <style>
+    :root {
+      --accent:        #8b0000;
+      --accent-light:  #b22222;
+      --bg-deep:       #0d0d0f;
+      --bg-panel:      #141418;
+      --bg-item:       #1a1a20;
+      --bg-item-hover: #20202a;
+      --bg-selected:   #1e0c0c;
+      --border:        #2a2a32;
+      --border-accent: #4a1a1a;
+      --text-primary:  #d4c8b0;
+      --text-muted:    #7a7268;
+      --text-accent:   #c45c5c;
+      --font:          Georgia, serif;
+      --font-mono:     'Courier New', Courier, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: var(--font);
+      font-size: 14px;
+    }
+
+    body {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      grid-template-areas: "header" "tabs" "main" "status";
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    #header {
+      grid-area: header;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 20px;
+      background: var(--bg-panel);
+      border-bottom: 2px solid var(--border-accent);
+    }
+
+    #header-title {
+      font-size: 17px;
+      letter-spacing: 0.12em;
+      color: var(--text-primary);
+      flex: 1;
+      text-align: center;
+    }
+
+    #header-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ── Tabs ── */
+    #tabs {
+      grid-area: tabs;
+      display: flex;
+      padding: 0 20px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 8px 22px;
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 13px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--text-primary); }
+    .tab-btn.active {
+      color: var(--text-primary);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ── Main ── */
+    #main {
+      grid-area: main;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      overflow: hidden;
+    }
+
+    /* ── File List ── */
+    #file-list-panel {
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 6px 0;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      cursor: pointer;
+      color: var(--text-primary);
+      font-size: 13px;
+      transition: background 0.1s;
+      border-left: 2px solid transparent;
+    }
+    .file-item:hover { background: var(--bg-item-hover); }
+    .file-item.selected {
+      background: var(--bg-selected);
+      border-left-color: var(--accent);
+      color: #e8d8c8;
+    }
+
+    .file-ext-badge {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      background: var(--bg-item);
+      padding: 1px 5px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    .file-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── Content Viewer ── */
+    #content-viewer {
+      overflow: auto;
+      background: var(--bg-deep);
+    }
+
+    #content-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #content-placeholder .ornament {
+      font-size: 36px;
+      opacity: 0.25;
+      line-height: 1;
+    }
+
+    #content-text {
+      padding: 36px 44px;
+      line-height: 1.8;
+      max-width: 820px;
+    }
+
+    #content-text pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.75;
+      color: var(--text-primary);
+    }
+
+    /* Rendered Markdown styles */
+    #content-text h1 {
+      font-size: 20px;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-accent);
+      color: #e8d8c8;
+      letter-spacing: 0.06em;
+    }
+    #content-text h2 {
+      font-size: 16px;
+      margin: 22px 0 8px;
+      color: var(--text-accent);
+      letter-spacing: 0.03em;
+    }
+    #content-text h3 {
+      font-size: 14px;
+      margin: 16px 0 6px;
+      color: var(--text-muted);
+    }
+    #content-text p { margin-bottom: 12px; }
+    #content-text ul { padding-left: 24px; margin-bottom: 12px; }
+    #content-text li { margin-bottom: 4px; }
+    #content-text hr {
+      border: none;
+      border-top: 1px solid var(--border-accent);
+      margin: 18px 0;
+    }
+    #content-text strong { color: #e0d0b8; }
+    #content-text em { font-style: italic; color: var(--text-muted); }
+    #content-text code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--bg-item);
+      padding: 1px 5px;
+      border-radius: 2px;
+    }
+    #content-text blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 8px 16px;
+      margin: 12px 0;
+      background: var(--bg-panel);
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    #content-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ── Status Bar ── */
+    #status-bar {
+      grid-area: status;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 5px 20px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    #status-bar .dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-right: 6px;
+    }
+
+    #sb-theme {
+      margin-left: auto;
+      font-style: italic;
+      opacity: 0.6;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-accent); }
+  </style>
+  <script src="evidence-data.js"></script>
+</head>
+<body>
+
+<div id="header">
+  <div id="header-title">Evidence Viewer</div>
+  <div id="header-count"></div>
+</div>
+
+<div id="tabs">
+  <button class="tab-btn active" id="tab-evidence">
+    証拠ファイル (<span id="evidence-count">0</span>)
+  </button>
+  <button class="tab-btn" id="tab-interview">
+    聴取メモ (<span id="interview-count">0</span>)
+  </button>
+</div>
+
+<div id="main">
+  <div id="file-list-panel"></div>
+  <div id="content-viewer">
+    <div id="content-placeholder">
+      <div class="ornament">⚜</div>
+      <div>証拠ファイルを選択してください</div>
+    </div>
+  </div>
+</div>
+
+<div id="status-bar">
+  <span><span class="dot"></span>証拠ファイル: <strong id="sb-evidence">0</strong> 件</span>
+  <span>聴取メモ: <strong id="sb-interview">0</strong> 件</span>
+  <span id="sb-theme"></span>
+</div>
+
+<script>
+'use strict';
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let currentTab = 'evidence';
+let evidenceFiles  = [];  // { name, displayName, ext, content, character? }
+let interviewFiles = [];  // { name, displayName, ext, content, character }
+let currentBlobUrl = null;
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('tab-evidence').addEventListener('click', () => switchTab('evidence'));
+  document.getElementById('tab-interview').addEventListener('click', () => switchTab('interview'));
+
+  const data = window.EVIDENCE_DATA;
+  applyTheme(data.theme);
+
+  evidenceFiles  = [];
+  interviewFiles = [];
+  for (const f of data.files) {
+    if (f.category === 'interview') interviewFiles.push(f);
+    else                            evidenceFiles.push(f);
+  }
+
+  // Sort
+  evidenceFiles.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+  interviewFiles.sort((a, b) => {
+    const ta = getTurnNumber(a.name), tb = getTurnNumber(b.name);
+    if (ta !== tb) return ta - tb;
+    return a.character.localeCompare(b.character, 'ja');
+  });
+
+  updateCounts();
+  renderFileList();
+});
+
+// ─── Apply theme ──────────────────────────────────────────────────────────────
+function applyTheme(theme) {
+  const root = document.documentElement;
+  if (theme.accent)       root.style.setProperty('--accent',        theme.accent);
+  if (theme.bg_tint)      root.style.setProperty('--bg-deep',       theme.bg_tint);
+  if (theme.text_primary) root.style.setProperty('--text-primary',  theme.text_primary);
+  if (theme.font)         root.style.setProperty('--font',          theme.font);
+  if (theme.label)        document.getElementById('sb-theme').textContent = theme.label;
+}
+
+// ─── Update counts ────────────────────────────────────────────────────────────
+function updateCounts() {
+  const total = evidenceFiles.length + interviewFiles.length;
+  document.getElementById('evidence-count').textContent = evidenceFiles.length;
+  document.getElementById('interview-count').textContent = interviewFiles.length;
+  document.getElementById('header-count').textContent = `証拠 ${total} 件`;
+  document.getElementById('sb-evidence').textContent = evidenceFiles.length;
+  document.getElementById('sb-interview').textContent = interviewFiles.length;
+}
+
+// ─── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-evidence').classList.toggle('active', tab === 'evidence');
+  document.getElementById('tab-interview').classList.toggle('active', tab === 'interview');
+  renderFileList();
+  clearContent();
+}
+
+// ─── Render file list ─────────────────────────────────────────────────────────
+function renderFileList() {
+  const panel = document.getElementById('file-list-panel');
+  panel.innerHTML = '';
+
+  const files = currentTab === 'evidence' ? evidenceFiles : interviewFiles;
+
+  if (files.length === 0) {
+    panel.innerHTML = `<div style="
+      padding:20px; color:var(--text-muted); font-size:13px; text-align:center;
+    ">ファイルがありません</div>`;
+    return;
+  }
+
+  for (const file of files) {
+    panel.appendChild(createFileItem(file));
+  }
+}
+
+function createFileItem(file) {
+  const item = document.createElement('div');
+  item.className = 'file-item';
+  item.dataset.name = file.name;
+
+  const badge = document.createElement('span');
+  badge.className = 'file-ext-badge';
+  badge.textContent = file.ext || '—';
+
+  const nameEl = document.createElement('span');
+  nameEl.className = 'file-name';
+  nameEl.textContent = file.displayName;
+  nameEl.title = file.name;  // original filename as tooltip
+
+  item.appendChild(badge);
+  item.appendChild(nameEl);
+  item.addEventListener('click', () => selectFile(file, item));
+  return item;
+}
+
+// ─── Select & display file ────────────────────────────────────────────────────
+function selectFile(file, itemEl) {
+  document.querySelectorAll('.file-item.selected').forEach(el => el.classList.remove('selected'));
+  itemEl.classList.add('selected');
+  displayContent(file, file.content);
+}
+
+function clearContent() {
+  revokeBlobUrl();
+  document.getElementById('content-viewer').innerHTML = `
+    <div id="content-placeholder">
+      <div class="ornament">⚜</div>
+      <div>証拠ファイルを選択してください</div>
+    </div>`;
+}
+
+function displayContent(file, text) {
+  revokeBlobUrl();
+  const viewer = document.getElementById('content-viewer');
+  viewer.innerHTML = '';
+
+  if (file.ext === 'html') {
+    const blob = new Blob([text], { type: 'text/html' });
+    currentBlobUrl = URL.createObjectURL(blob);
+    const iframe = document.createElement('iframe');
+    iframe.id = 'content-iframe';
+    iframe.src = currentBlobUrl;
+    viewer.appendChild(iframe);
+
+  } else if (file.ext === 'md') {
+    const div = document.createElement('div');
+    div.id = 'content-text';
+    div.innerHTML = renderMarkdown(text);
+    viewer.appendChild(div);
+
+  } else {
+    // .txt and everything else → <pre>
+    const div = document.createElement('div');
+    div.id = 'content-text';
+    const pre = document.createElement('pre');
+    pre.textContent = text;
+    div.appendChild(pre);
+    viewer.appendChild(div);
+  }
+}
+
+function revokeBlobUrl() {
+  if (currentBlobUrl) {
+    URL.revokeObjectURL(currentBlobUrl);
+    currentBlobUrl = null;
+  }
+}
+
+// ─── Markdown renderer ────────────────────────────────────────────────────────
+function renderMarkdown(md) {
+  // Sanitize: strip <script> blocks
+  let text = md.replace(/<script[\s\S]*?<\/script>/gi, '');
+
+  const lines = text.split('\n');
+  const out = [];
+  let inList       = false;
+  let inBlockquote = false;
+
+  function closeAll() {
+    if (inList)       { out.push('</ul>');         inList       = false; }
+    if (inBlockquote) { out.push('</blockquote>'); inBlockquote = false; }
+  }
+
+  for (const line of lines) {
+    // Close blockquote when line no longer starts with >
+    if (inBlockquote && !line.startsWith('>')) {
+      out.push('</blockquote>');
+      inBlockquote = false;
+    }
+
+    // Blockquote
+    if (line.startsWith('> ') || line.startsWith('>')) {
+      if (inList) { out.push('</ul>'); inList = false; }
+      if (!inBlockquote) { out.push('<blockquote>'); inBlockquote = true; }
+      const bqContent = line.startsWith('> ') ? line.slice(2) : line.slice(1);
+      out.push('<p>' + inlineMd(bqContent) + '</p>');
+      continue;
+    }
+
+    // Headings
+    const h1m = line.match(/^# (.+)/);
+    const h2m = line.match(/^## (.+)/);
+    const h3m = line.match(/^### (.+)/);
+    if (h3m) { closeAll(); out.push(`<h3>${inlineMd(h3m[1])}</h3>`); continue; }
+    if (h2m) { closeAll(); out.push(`<h2>${inlineMd(h2m[1])}</h2>`); continue; }
+    if (h1m) { closeAll(); out.push(`<h1>${inlineMd(h1m[1])}</h1>`); continue; }
+
+    // HR
+    if (/^---+$/.test(line.trim())) {
+      closeAll();
+      out.push('<hr>');
+      continue;
+    }
+
+    // List item (- or *)
+    if (/^[*\-] /.test(line)) {
+      if (!inList) { out.push('<ul>'); inList = true; }
+      out.push(`<li>${inlineMd(line.slice(2))}</li>`);
+      continue;
+    }
+
+    // Blank line
+    if (line.trim() === '') {
+      if (inList) { out.push('</ul>'); inList = false; }
+      out.push('');
+      continue;
+    }
+
+    // Regular line
+    if (inList) {
+      out.push(`<li>${inlineMd(line)}</li>`);
+    } else {
+      out.push(`<p>${inlineMd(line)}</p>`);
+    }
+  }
+
+  closeAll();
+  return out.join('\n');
+}
+
+function inlineMd(text) {
+  // HTML-escape first
+  text = escapeHtml(text);
+  // Bold
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Inline code
+  text = text.replace(/`(.+?)`/g, '<code>$1</code>');
+  return text;
+}
+
+function getTurnNumber(name) {
+  const m = name.match(/_t(\d+)/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>
