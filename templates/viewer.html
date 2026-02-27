@@ -267,13 +267,23 @@
       opacity: 0.6;
     }
 
+    #sb-sync {
+      font-size: 11px;
+      color: var(--text-muted);
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+    #sb-sync.updated {
+      color: var(--text-accent);
+      opacity: 1;
+    }
+
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-deep); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--border-accent); }
   </style>
-  <script src="evidence-data.js"></script>
 </head>
 <body>
 
@@ -305,6 +315,7 @@
   <span><span class="dot"></span>証拠ファイル: <strong id="sb-evidence">0</strong> 件</span>
   <span>聴取メモ: <strong id="sb-interview">0</strong> 件</span>
   <span id="sb-theme"></span>
+  <span id="sb-sync">同期中…</span>
 </div>
 
 <script>
@@ -315,14 +326,42 @@ let currentTab = 'evidence';
 let evidenceFiles  = [];  // { name, displayName, ext, content, character? }
 let interviewFiles = [];  // { name, displayName, ext, content, character }
 let currentBlobUrl = null;
+let selectedFileName = null;
+let lastFileCount = -1;
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('tab-evidence').addEventListener('click', () => switchTab('evidence'));
-  document.getElementById('tab-interview').addEventListener('click', () => switchTab('interview'));
+const POLL_INTERVAL = 5000; // ms
 
+// ─── Dynamic data loading ─────────────────────────────────────────────────────
+function loadEvidenceData(callback) {
+  document.querySelectorAll('script[data-evidence]').forEach(s => s.remove());
+  const script = document.createElement('script');
+  script.dataset.evidence = '1';
+  script.src = 'evidence-data.js?' + Date.now();
+  script.onload = callback;
+  script.onerror = () => setSyncStatus('読込失敗', false);
+  document.head.appendChild(script);
+}
+
+function setSyncStatus(msg, isUpdated) {
+  const el = document.getElementById('sb-sync');
+  el.textContent = msg;
+  el.classList.toggle('updated', isUpdated);
+}
+
+function applyData() {
   const data = window.EVIDENCE_DATA;
-  applyTheme(data.theme);
+  const newCount = data.files.length;
+
+  if (newCount === lastFileCount) {
+    setSyncStatus('同期済み', false);
+    return;
+  }
+
+  lastFileCount = newCount;
+
+  if (lastFileCount === 0) {
+    applyTheme(data.theme);
+  }
 
   evidenceFiles  = [];
   interviewFiles = [];
@@ -331,7 +370,6 @@ document.addEventListener('DOMContentLoaded', () => {
     else                            evidenceFiles.push(f);
   }
 
-  // Sort
   evidenceFiles.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
   interviewFiles.sort((a, b) => {
     const ta = getTurnNumber(a.name), tb = getTurnNumber(b.name);
@@ -341,6 +379,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateCounts();
   renderFileList();
+
+  // 選択中ファイルを復元
+  if (selectedFileName) {
+    const allFiles = [...evidenceFiles, ...interviewFiles];
+    const f = allFiles.find(f => f.name === selectedFileName);
+    if (f) {
+      const item = document.querySelector(`.file-item[data-name="${CSS.escape(f.name)}"]`);
+      if (item) selectFile(f, item);
+    }
+  }
+
+  setSyncStatus('更新されました', true);
+  setTimeout(() => setSyncStatus('同期済み', false), 2000);
+}
+
+function poll() {
+  loadEvidenceData(applyData);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('tab-evidence').addEventListener('click', () => switchTab('evidence'));
+  document.getElementById('tab-interview').addEventListener('click', () => switchTab('interview'));
+
+  loadEvidenceData(() => {
+    const data = window.EVIDENCE_DATA;
+    applyTheme(data.theme);
+    applyData();
+    setInterval(poll, POLL_INTERVAL);
+  });
 });
 
 // ─── Apply theme ──────────────────────────────────────────────────────────────
@@ -415,6 +483,7 @@ function createFileItem(file) {
 function selectFile(file, itemEl) {
   document.querySelectorAll('.file-item.selected').forEach(el => el.classList.remove('selected'));
   itemEl.classList.add('selected');
+  selectedFileName = file.name;
   displayContent(file, file.content);
 }
 

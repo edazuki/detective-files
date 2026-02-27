@@ -80,18 +80,24 @@
 ├── .github/
 │   └── copilot-instructions.md   ← AI用指示書（自動読み込み）
 ├── system/
-│   └── rules.md                  ← 詳細ゲームルール
+│   ├── rules.md                  ← 詳細ゲームルール
+│   ├── partner.md                ← パートナーキャラクター定義・生成ルール
+│   └── feedback.md               ← 運営改善メモ
 ├── scenarios/
 │   └── 事件01_レイヴンクロフト館の惨劇/
 │       ├── scenario.md           ← 場所・フラグ定義
 │       ├── characters.md         ← NPC定義（好感度・知識）
 │       ├── clues.md              ← 証拠の取得条件
-│       ├── truth.md              ← 真相（AIのみ参照）
-│       └── source-evidence/      ← 証拠ファイル原本
-├── evidence/                     ← 捜査中に届く証拠（gitignore済み）
-├── session/                      ← セッション状態・ログ
+│       └── truth.md              ← 真相（AIのみ参照）
+├── saves/                        ← セーブデータ（gitignore済み）
+│   └── &lt;セーブ名&gt;/
+│       ├── state.yml             ← セッション状態
+│       ├── evidence/             ← 捜査机（生成済み証拠・聴取メモ）
+│       └── evidence-data.js      ← ビューアー用データ（自動生成）
 ├── templates/
-│   └── scenario-template.md      ← シナリオ作成テンプレート
+│   ├── scenario-template.md      ← シナリオ作成テンプレート
+│   ├── evidence-data.js          ← ビューアーデータテンプレート
+│   └── viewer.html               ← 証拠ビューアー
 └── README.html                   ← このファイル</div>
 
 <h2>シナリオを追加する</h2>

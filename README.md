@@ -25,17 +25,25 @@ In GitHub Copilot (VS Code), these files are loaded automatically. In other AI e
 
 ```
 .github/copilot-instructions.md  ← AI instructions (read this first)
-system/rules.md                  ← Detailed game rules
+system/
+  rules.md                       ← Detailed game rules
+  partner.md                     ← Partner character definition & generation rules
+  feedback.md                    ← Operational improvement notes
 scenarios/                       ← Scenario folders
   事件01_.../
     scenario.md                  ← Locations & flags
     characters.md                ← NPC definitions
     clues.md                     ← Evidence conditions
     truth.md                     ← Solution (AI eyes only)
-    source-evidence/             ← Evidence file originals
-evidence/                        ← Player's investigation desk (gitignored during play)
-session/                         ← Session state & logs
-templates/scenario-template.md  ← Template for creating new scenarios
+saves/                           ← Save data (gitignored during play)
+  <save-name>/
+    state.yml                    ← Session state
+    evidence/                    ← Player's investigation desk
+    evidence-data.js             ← Viewer data (auto-generated)
+templates/
+  scenario-template.md           ← Template for creating new scenarios
+  evidence-data.js               ← Viewer data template
+  viewer.html                    ← Evidence viewer template
 ```
 
 ## Human-Readable Guide
